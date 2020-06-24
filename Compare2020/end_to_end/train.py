@@ -1,6 +1,6 @@
 import os
 # test
-from Breathing_1.end_to_end.utils import load_data, prepare_data, create_model, concatenate_prediction, pearson_coef, \
+from Compare2020.end_to_end.utils import load_data, prepare_data, create_model, concatenate_prediction, pearson_coef, \
     correlation_coefficient_loss
 import numpy as np
 # train data

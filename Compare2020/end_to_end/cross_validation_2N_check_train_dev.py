@@ -2,9 +2,9 @@ import gc
 
 import scipy
 
-from Breathing_1.end_to_end.cross_validation_2N_train import divide_data_on_parts, extract_and_reshape_list_of_parts, \
+from Compare2020.end_to_end.cross_validation_2N_train import divide_data_on_parts, extract_and_reshape_list_of_parts, \
     reshaping_data_for_model, choose_real_labs_only_with_filenames, concatenate_prediction
-from Breathing_1.end_to_end.utils import create_model, load_data, prepare_data, correlation_coefficient_loss
+from Compare2020.end_to_end.utils import create_model, load_data, prepare_data, correlation_coefficient_loss
 import pandas as pd
 import numpy as np
 from keras import backend as K
