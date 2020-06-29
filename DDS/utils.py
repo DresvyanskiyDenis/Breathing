@@ -39,7 +39,7 @@ def create_model(input_shape):
 
 def average_predictions_by_timesteps(predicted_values, timesteps):
     predicted_values=predicted_values.reshape(timesteps.shape)
-    result=pd.DataFrame(data=np.concatenate([predicted_values.flatten(), timesteps.flatten()]), columns=['predicted_value', 'timestep'])
+    result=pd.DataFrame(data=np.concatenate([predicted_values.flatten()[..., np.newaxis], timesteps.flatten()[..., np.newaxis]], axis=1), columns=['predicted_value', 'timestep'])
     tmp=result.groupby(by=['timestep']).mean()
     return tmp
 
@@ -50,41 +50,49 @@ class data_instance():
         self.window_size=window_size
         self.window_step=window_step
         self.data=None
-        self.data_timesteps=None
         self.cutted_data=None
-        self.cutted_data_timesteps=None
 
-    def load_data(self, path_to_data):
+    def load_data(self, path_to_data, needed_frame_rate=-1):
         self.frame_rate, self.data = wavfile.read(path_to_data)
-        self.data_timesteps=np.array([i for i in range(self.data.shape[0])])*(1./self.frame_rate)
+        print('loading data for %s, original frame rate: %i, needed_frame_rate: %i, ratio: %f' % (path_to_data.split('\\')[-1], self.frame_rate, needed_frame_rate, self.frame_rate / needed_frame_rate))
+        if needed_frame_rate!=-1 and needed_frame_rate!=self.frame_rate:
+            ratio=self.frame_rate/needed_frame_rate
+            if ratio<1: ratio=1./ratio
+            ratio=int(ratio)
+            self.frame_rate=needed_frame_rate
+            print('first size of data:', self.data.shape)
+            self.data=self.data[::ratio]
+            print('size of data after reduction:', self.data.shape)
+
+
+
+
+    def cut_data_to_length(self, length_to_cut_data):
+        self.data=self.data[:length_to_cut_data]
 
     def cut_data_on_windows(self, cutting_mode, padding_mode=None):
         num_windows=how_many_windows_do_i_need(self.data.shape[0], self.window_size, self.window_step)
         cutted_data=np.zeros(shape=(num_windows, self.window_size))
-        cutted_data_timesteps=np.zeros(shape=(num_windows, self.window_size))
         start=0
         for idx_window in range(num_windows-1):
             end=start+self.window_size
             cutted_data[idx_window]=self.data[start:end]
-            cutted_data_timesteps[idx_window]=self.data_timesteps[start:end]
             start+=self.window_step
         # last window
         if cutting_mode=='with_padding':
             end=start+self.window_size
             cutted_data[num_windows-1]=self.pad_the_sequence(self.data[start:end], mode=padding_mode)
-            cutted_data_timesteps[num_windows-1] = self.pad_the_sequence(self.data_timesteps[start:end], mode=padding_mode, padding_value=-1)
         elif cutting_mode=='without_padding':
             end=self.data.shape[0]
             start=end-self.window_size
             cutted_data[num_windows-1]=self.data[start:end]
-            cutted_data_timesteps[num_windows - 1] = self.data_timesteps[start:end]
         else:
             raise AttributeError('cutting_mode can be either with_padding or without_padding')
-        return cutted_data.astype('float32'), cutted_data_timesteps.astype('float32')
+        return cutted_data.astype('float32')
 
     def load_and_cut_data(self, path_to_data, cutting_mode, padding_mode=None):
         self.load_data(path_to_data)
-        self.cutted_data, self.cutted_data_timesteps=self.cut_data_on_windows(cutting_mode=cutting_mode, padding_mode=padding_mode)
+        self.cutted_data=self.cut_data_on_windows(cutting_mode=cutting_mode, padding_mode=padding_mode)
 
     def pad_the_sequence(self, sequence, mode, padding_value=0):
         result=np.ones(shape=(self.window_size))*padding_value
