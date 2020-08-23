@@ -68,18 +68,20 @@ def reshaping_data_for_model(data, labels):
     return result_data, result_labels
 
 def concatenate_prediction(predicted_values, labels_timesteps, filenames_dict, columns_for_real_labels=['filename', 'timeFrame', 'upper_belt']):
-    predicted_values=predicted_values.reshape(labels_timesteps.shape)
-    num_timesteps=np.unique(labels_timesteps[0]).shape[0]
-    result_predicted_values = pd.DataFrame(data=np.zeros((num_timesteps*predicted_values.shape[0], len(columns_for_real_labels))), columns=columns_for_real_labels, dtype='float32')
-    result_predicted_values_idx=0
+    predicted_values = predicted_values.reshape(labels_timesteps.shape)
+    result_predicted_values = pd.DataFrame(columns=columns_for_real_labels, dtype='float32')
+    result_predicted_values['filename'] = result_predicted_values['filename'].astype('str')
     for instance_idx in range(predicted_values.shape[0]):
-        timesteps=np.unique(labels_timesteps[instance_idx])
-        for timestep in timesteps:
-            result_predicted_values.iloc[result_predicted_values_idx, 0]=filenames_dict[instance_idx]
-            result_predicted_values.iloc[result_predicted_values_idx, 1]=timestep
-            result_predicted_values.iloc[result_predicted_values_idx, 2]=np.mean(predicted_values[instance_idx,labels_timesteps[instance_idx]==timestep])
-            result_predicted_values_idx+=1
-    return result_predicted_values
+        predicted_values_tmp = predicted_values[instance_idx].reshape((-1, 1))
+        timesteps_labels_tmp = labels_timesteps[instance_idx].reshape((-1, 1))
+        tmp = pd.DataFrame(columns=['timeFrame', 'upper_belt'],
+                           data=np.concatenate((timesteps_labels_tmp, predicted_values_tmp), axis=1))
+        tmp = tmp.groupby(by=['timeFrame']).mean().reset_index()
+        tmp['filename'] = filenames_dict[instance_idx]
+        result_predicted_values = result_predicted_values.append(tmp.copy(deep=True))
+    result_predicted_values['timeFrame'] = result_predicted_values['timeFrame'].astype('float32')
+    result_predicted_values['upper_belt'] = result_predicted_values['upper_belt'].astype('float32')
+    return result_predicted_values[columns_for_real_labels]
 
 def choose_real_labs_only_with_filenames(labels, filenames):
     return labels[labels['filename'].isin(filenames)]
