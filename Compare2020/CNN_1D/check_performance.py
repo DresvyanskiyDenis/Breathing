@@ -1,6 +1,6 @@
 import os
 # test
-from Compare2020.end_to_end.utils import load_data, prepare_data, create_model, concatenate_prediction, pearson_coef, \
+from Compare2020.CNN_1D.utils import load_data, prepare_data, create_model, concatenate_prediction, pearson_coef, \
     correlation_coefficient_loss, load_test_data, prepare_test_data, concatenate_prediction_test
 import numpy as np
 

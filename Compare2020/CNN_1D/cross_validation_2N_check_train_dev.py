@@ -25,9 +25,9 @@ That is a final metric to measure performance of ensemble without test data
 
 import gc
 import scipy
-from Compare2020.end_to_end.cross_validation_2N_train import divide_data_on_parts, extract_list_of_parts, \
+from Compare2020.CNN_1D.cross_validation_2N_train import divide_data_on_parts, extract_list_of_parts, \
     reshaping_data_for_model, choose_real_labs_only_with_filenames, concatenate_prediction
-from Compare2020.end_to_end.utils import create_model, load_data, prepare_data, correlation_coefficient_loss
+from Compare2020.CNN_1D.utils import create_model, load_data, prepare_data, correlation_coefficient_loss
 import pandas as pd
 import numpy as np
 from keras import backend as K

@@ -7,7 +7,7 @@ import tensorflow as tf
 import gc
 from keras import backend as K
 
-from Compare2020.end_to_end.utils import create_model, load_data, prepare_data, correlation_coefficient_loss
+from Compare2020.CNN_1D.utils import create_model, load_data, prepare_data, correlation_coefficient_loss
 
 class MyCustomCallback(tf.keras.callbacks.Callback):
     def on_epoch_end(self, epoch, logs=None):
