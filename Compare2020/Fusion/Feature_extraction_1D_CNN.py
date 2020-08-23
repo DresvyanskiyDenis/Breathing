@@ -56,6 +56,14 @@ if __name__ == "__main__":
     devel_data, devel_labels, devel_dict, frame_rate=load_data(path_to_devel_data, path_to_devel_labels, 'devel')
     prepared_devel_data, prepared_devel_labels,prepared_devel_labels_timesteps=prepare_data(devel_data, devel_labels, devel_dict, frame_rate, length_sequence, step_sequence)
 
+    # test data
+    path_to_test_data = '/content/drive/My Drive/ComParE2020_Breathing/wav/'
+    path_to_test_labels = '/content/drive/My Drive/ComParE2020_Breathing/lab/'
+    test_data, test_labels, test_dict, frame_rate = load_data(path_to_test_data, path_to_test_labels, 'test')
+    prepared_test_data, prepared_test_labels, prepared_test_labels_timesteps = prepare_data(test_data, test_labels,
+                                                                                            test_dict, frame_rate,
+                                                                                            length_sequence,
+                                                                                            step_sequence)
 
     # reshaping for extracting process
     prepared_train_data = prepared_train_data.reshape((prepared_train_data.shape + (1,)))
@@ -66,6 +74,12 @@ if __name__ == "__main__":
     prepared_devel_data = prepared_devel_data.reshape((prepared_devel_data.shape + (1,)))
     prepared_devel_data = prepared_devel_data.reshape(((-1,) + prepared_devel_data.shape[2:]))
     prepared_devel_data = prepared_devel_data.astype('float32')
+
+    # reshaping for extracting process
+    print(prepared_test_data.shape)
+    prepared_test_data = prepared_test_data.reshape((prepared_test_data.shape + (1,)))
+    prepared_test_data = prepared_test_data.reshape(((-1,) + prepared_test_data.shape[2:]))
+    prepared_test_data = prepared_test_data.astype('float32')
 
     # model parameters
     input_shape = (prepared_train_data.shape[-2], prepared_train_data.shape[-1])
@@ -84,6 +98,7 @@ if __name__ == "__main__":
         # extract deep features from train and development data
         extracted_features_train = extractor.predict(prepared_train_data, batch_size=batch_size)
         extracted_features_development = extractor.predict(prepared_devel_data, batch_size=batch_size)
+        extracted_features_test = extractor.predict(prepared_test_data, batch_size=batch_size)
         # transform extracted features in convenient format for saving as csv file
         transformed_extracted_features_train=transform_deep_features_to_filetype(deep_features=extracted_features_train,
                                                                                  timesteps_labels=prepared_train_labels_timesteps,
@@ -91,9 +106,13 @@ if __name__ == "__main__":
         transformed_extracted_features_development=transform_deep_features_to_filetype(deep_features=extracted_features_development,
                                                                                  timesteps_labels=prepared_devel_labels_timesteps,
                                                                                  class_dict=devel_dict)
+        transformed_extracted_features_test=transform_deep_features_to_filetype(deep_features=extracted_features_test,
+                                                                                 timesteps_labels=prepared_test_labels_timesteps,
+                                                                                 class_dict=test_dict)
         # save transformed deep features as csv file
         transformed_extracted_features_train.to_csv('deep_features_train_model_%i.csv'%(num_model), index=False)
         transformed_extracted_features_development.to_csv('deep_features_devel_model_%i.csv' % (num_model), index=False)
+        transformed_extracted_features_test.to_csv('deep_features_test_model_%i.csv' % (num_model), index=False)
         # clear RAM
         del extractor
         del model
