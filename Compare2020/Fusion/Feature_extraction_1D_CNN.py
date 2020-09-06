@@ -7,25 +7,7 @@ import pandas as pd
 import tensorflow as tf
 from tensorflow.keras import backend as K
 
-def transform_deep_features_to_filetype(deep_features,timesteps_labels,class_dict,columns=['filename', 'timeFrame', 'deep_features']):
-    reshaped_timesteps=timesteps_labels.reshape((timesteps_labels.shape[0],-1))
-    new_shape=reshaped_timesteps.shape+(-1,)
-    reshaped_deep_features=deep_features.reshape(new_shape).astype('float32')
-    print(reshaped_deep_features.shape)
-    result=pd.DataFrame(columns=columns, data=np.zeros((timesteps_labels.shape[0]*timesteps_labels.shape[1]*timesteps_labels.shape[2],3)))
-    result['filename']=result['filename'].astype('str')
-    result['timeFrame']=result['timeFrame'].astype('float32')
-    result['deep_features']=result['deep_features'].astype('object')
-    print(result.shape)
-    idx_result=0
-    for instance_idx in range(reshaped_deep_features.shape[0]):
-      for timesteps_idx in range(reshaped_timesteps.shape[1]):
-        result['filename'].iloc[idx_result]=class_dict[instance_idx]
-        result['timeFrame'].iloc[idx_result]=reshaped_timesteps[instance_idx,timesteps_idx]
-        result['deep_features'].iloc[idx_result]=[reshaped_deep_features[instance_idx,timesteps_idx]]
-        idx_result=idx_result+1
-    return result
-
+from Compare2020.Fusion.fusion_utils import transform_deep_features_to_filetype
 
 if __name__ == "__main__":
     # data params for feature extraction
